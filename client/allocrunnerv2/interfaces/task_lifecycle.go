@@ -75,6 +75,10 @@ type TaskPrestartHook interface {
 	Prestart(context.Context, *TaskPrestartRequest, *TaskPrestartResponse) error
 }
 
+type DriverStats interface {
+	Stats() (*cstructs.TaskResourceUsage, error)
+}
+
 type TaskPoststartRequest struct {
 	// Exec hook (may be nil)
 	DriverExec driver.ScriptExecutor
@@ -84,6 +88,9 @@ type TaskPoststartRequest struct {
 
 	// TaskEnv is the task's environment
 	TaskEnv *env.TaskEnv
+
+	// Stats collector
+	DriverStats DriverStats
 }
 type TaskPoststartResponse struct{}
 

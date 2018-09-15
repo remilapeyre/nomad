@@ -100,18 +100,18 @@ type ClientStatsReporter interface {
 }
 
 type AllocRunner interface {
-	StatsReporter() allocrunner.AllocStatsReporter
+	Alloc() *structs.Allocation
 	Destroy()
 	GetAllocDir() *allocdir.AllocDir
 	IsDestroyed() bool
-	IsWaiting() bool
 	IsMigrating() bool
+	IsWaiting() bool
 	Listener() *cstructs.AllocListener
-	WaitCh() <-chan struct{}
-	Update(*structs.Allocation)
-	Alloc() *structs.Allocation
 	Restore() error
 	Run()
+	StatsReporter() allocrunner.AllocStatsReporter
+	Update(*structs.Allocation)
+	WaitCh() <-chan struct{}
 }
 
 // Client is used to implement the client interaction with Nomad. Clients

@@ -474,15 +474,38 @@ func (ar *allocRunner) IsMigrating() bool {
 	return ar.prevAllocWatcher.IsMigrating()
 }
 
-// StatsReporter needs implementing
-//XXX
 func (ar *allocRunner) StatsReporter() allocrunner.AllocStatsReporter {
-	return noopStatsReporter{}
+	return ar
 }
 
-//FIXME implement
-type noopStatsReporter struct{}
+// LatestAllocStats returns the latest stats for an allocation. If taskFilter
+// is set, only stats for that task -- if it exists -- are returned.
+func (ar *allocRunner) LatestAllocStats(taskFilter string) (*cstructs.AllocResourceUsage, error) {
+	ar.tasksLock.RLock()
+	defer ar.tasksLock.RUnlock()
 
-func (noopStatsReporter) LatestAllocStats(taskFilter string) (*cstructs.AllocResourceUsage, error) {
-	return nil, fmt.Errorf("not implemented")
+	astat := &cstructs.AllocResourceUsage{
+		Tasks: make(map[string]*cstructs.TaskResourceUsage, len(ar.tasks)),
+		ResourceUsage: &cstructs.ResourceUsage{
+			MemoryStats: &cstructs.MemoryStats{},
+			CpuStats:    &cstructs.CpuStats{},
+		},
+	}
+
+	for name, tr := range ar.tasks {
+		if taskFilter != "" && taskFilter != name {
+			// Getting stats for a particular task and its not this one!
+			continue
+		}
+
+		if usage := tr.LatestResourceUsage(); usage != nil {
+			astat.Tasks[name] = usage
+			astat.ResourceUsage.Add(usage)
+			if usage.Timestamp > astat.Timestamp {
+				astat.Timestamp = usage.Timestamp
+			}
+		}
+	}
+
+	return astat, nil
 }
