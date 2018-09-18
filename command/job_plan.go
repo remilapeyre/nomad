@@ -173,6 +173,12 @@ func (c *JobPlanCommand) Run(args []string) int {
 			c.Colorize().Color(fmt.Sprintf("[bold][yellow]Job Warnings:\n%s[reset]\n", resp.Warnings)))
 	}
 
+	if len(resp.Annotations.PreemptedAllocs) > 0 {
+		c.Ui.Output(c.Colorize().Color("[bold]Potential Preempted Allocations:[reset]"))
+		c.Ui.Output(formatAllocListStubs(resp.Annotations.PreemptedAllocs, false, 8))
+		c.Ui.Output("")
+	}
+
 	// Print the job index info
 	c.Ui.Output(c.Colorize().Color(formatJobModifyIndex(resp.JobModifyIndex, path)))
 	return getExitCode(resp)

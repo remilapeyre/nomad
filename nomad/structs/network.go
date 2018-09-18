@@ -167,6 +167,39 @@ func (idx *NetworkIndex) yieldIP(cb func(net *NetworkResource, ip net.IP) bool) 
 	}
 }
 
+// PreemptionNeeded is used to check whether preemption is needed to satisfy
+// the network resource asked
+func (idx *NetworkIndex) PreemptionNeeded(ask *NetworkResource) bool {
+	preemptionNeeded := false
+	for _, n := range idx.AvailNetworks {
+		// New network, so reset value of preemptionNeeded and check again
+		preemptionNeeded = false
+		availBandwidth := idx.AvailBandwidth[n.Device]
+		usedBandwidth := idx.UsedBandwidth[n.Device]
+		// Preemption is needed if the asked for bandwidth
+		// is more than what's available in the device
+		if usedBandwidth+ask.MBits > availBandwidth {
+			preemptionNeeded = true
+			continue
+		}
+		used := idx.UsedPorts[n.IP]
+		for _, port := range ask.ReservedPorts {
+			// Check if a reserved port needed by the ask is already used
+			// if so, preemption is needed
+			if used != nil && used.Check(uint(port.Value)) {
+				preemptionNeeded = true
+				break
+			}
+		}
+		if !preemptionNeeded {
+			// We found one network that satisfies the ask without needing preemption
+			break
+		}
+	}
+
+	return preemptionNeeded
+}
+
 // AssignNetwork is used to assign network resources given an ask.
 // If the ask cannot be satisfied, returns nil
 func (idx *NetworkIndex) AssignNetwork(ask *NetworkResource) (out *NetworkResource, err error) {

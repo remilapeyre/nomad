@@ -334,6 +334,24 @@ func (s *SystemScheduler) computePlacements(place []allocTuple) error {
 				alloc.PreviousAllocation = missing.Alloc.ID
 			}
 
+			// If this placement involves preemption, set DesiredState to stop for those allocations
+			if option.PreemptedAllocs != nil {
+				var preemptedAllocIDs []string
+				for _, stop := range option.PreemptedAllocs {
+					s.plan.AppendPreemptedAlloc(stop, structs.AllocDesiredStatusEvict, alloc.ID)
+
+					preemptedAllocIDs = append(preemptedAllocIDs, stop.ID)
+					if s.eval.AnnotatePlan && s.plan.Annotations != nil {
+						s.plan.Annotations.PreemptedAllocs = append(s.plan.Annotations.PreemptedAllocs, stop.Stub())
+						if s.plan.Annotations.DesiredTGUpdates != nil {
+							desired := s.plan.Annotations.DesiredTGUpdates[missing.TaskGroup.Name]
+							desired.Evict += 1
+						}
+					}
+				}
+				alloc.PreemptedAllocations = preemptedAllocIDs
+			}
+
 			s.plan.AppendAlloc(alloc)
 		} else {
 			// Lazy initialize the failed map
