@@ -161,12 +161,12 @@ func (c *jobConfig) decodeTopLevelExtras(content *hcl.BodyContent, ctx *hcl.Eval
 			foundVault = b
 
 			v := &api.Vault{}
-			diags = append(diags, hclDecoder.DecodeBody(b.Body, ctx, v)...)
+			diags = append(diags, HCLDecoder.DecodeBody(b.Body, ctx, v)...)
 			c.Vault = v
 
 		} else if b.Type == taskLabel {
 			t := &api.Task{}
-			diags = append(diags, hclDecoder.DecodeBody(b.Body, ctx, t)...)
+			diags = append(diags, HCLDecoder.DecodeBody(b.Body, ctx, t)...)
 			if len(b.Labels) == 1 {
 				t.Name = b.Labels[0]
 				c.Tasks = append(c.Tasks, t)
@@ -280,7 +280,7 @@ func (c *jobConfig) decodeJob(content *hcl.BodyContent, ctx *hcl.EvalContext) hc
 
 		diags = append(diags, mdiags...)
 		diags = append(diags, c.decodeTopLevelExtras(extra, ctx)...)
-		diags = append(diags, hclDecoder.DecodeBody(remain, ctx, c.Job)...)
+		diags = append(diags, HCLDecoder.DecodeBody(remain, ctx, c.Job)...)
 
 		if metaAttr != nil {
 			c.Job.Meta = metaAttr

@@ -14,12 +14,12 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
-var hclDecoder *gohcl.Decoder
+var HCLDecoder *gohcl.Decoder
 
 func init() {
-	hclDecoder = newHCLDecoder()
-	hclDecoder.RegisterBlockDecoder(reflect.TypeOf(api.TaskGroup{}), decodeTaskGroup)
-	hclDecoder.RegisterBlockDecoder(reflect.TypeOf(api.Task{}), decodeTask)
+	HCLDecoder = newHCLDecoder()
+	HCLDecoder.RegisterBlockDecoder(reflect.TypeOf(api.TaskGroup{}), decodeTaskGroup)
+	HCLDecoder.RegisterBlockDecoder(reflect.TypeOf(api.Task{}), decodeTask)
 }
 
 func newHCLDecoder() *gohcl.Decoder {
@@ -268,7 +268,7 @@ func decodeTaskGroup(body hcl.Body, ctx *hcl.EvalContext, val interface{}) hcl.D
 	for _, b := range content.Blocks {
 		if b.Type == "vault" {
 			v := &api.Vault{}
-			diags = append(diags, hclDecoder.DecodeBody(b.Body, ctx, v)...)
+			diags = append(diags, HCLDecoder.DecodeBody(b.Body, ctx, v)...)
 			tgExtra.Vault = v
 		}
 	}
@@ -393,7 +393,7 @@ func decodeAsAttribute(body hcl.Body, ctx *hcl.EvalContext, name string) (map[st
 	envExpr := attr.Expr
 
 	result := map[string]string{}
-	diags = append(diags, hclDecoder.DecodeExpression(envExpr, ctx, &result)...)
+	diags = append(diags, HCLDecoder.DecodeExpression(envExpr, ctx, &result)...)
 
 	return result, remain, diags
 }
@@ -438,7 +438,7 @@ func decodeTaskScalingPolicies(blocks hcl.Blocks, ctx *hcl.EvalContext, task *ap
 		seen[label] = b
 
 		var p api.ScalingPolicy
-		diags = append(diags, hclDecoder.DecodeBody(b.Body, ctx, &p)...)
+		diags = append(diags, HCLDecoder.DecodeBody(b.Body, ctx, &p)...)
 
 		if p.Type == "" {
 			p.Type = policyType

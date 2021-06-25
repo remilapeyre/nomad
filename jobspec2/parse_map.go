@@ -11,12 +11,12 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// decodeMapInterfaceType decodes hcl instances of `map[string]interface{}` fields
+// DecodeMapInterfaceType decodes hcl instances of `map[string]interface{}` fields
 // of v.
 //
-// The HCL parser stores the hcl AST as the map values, and decodeMapInterfaceType
+// The HCL parser stores the hcl AST as the map values, and DecodeMapInterfaceType
 // evaluates the AST and converts them to the native golang types.
-func decodeMapInterfaceType(v interface{}, ctx *hcl.EvalContext) hcl.Diagnostics {
+func DecodeMapInterfaceType(v interface{}, ctx *hcl.EvalContext) hcl.Diagnostics {
 	w := &walker{ctx: ctx}
 	err := reflectwalk.Walk(v, w)
 	if err != nil {
