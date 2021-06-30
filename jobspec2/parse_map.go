@@ -46,13 +46,14 @@ func (w *walker) Map(m reflect.Value) error {
 		return nil
 	}
 
+	interfaceMap := m.Interface().(map[string]interface{})
 	for _, k := range m.MapKeys() {
 		v := m.MapIndex(k)
 		if attr, ok := v.Interface().(*hcl.Attribute); ok {
 			c, diags := decodeInterface(attr.Expr, w.ctx)
 			w.diags = append(w.diags, diags...)
 
-			m.SetMapIndex(k, reflect.ValueOf(c))
+			interfaceMap[k.String()] = c
 		}
 	}
 	return nil
